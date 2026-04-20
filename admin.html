@@ -161,8 +161,12 @@
                     <div class="form-group">
                         <label>URL (YouTube 공유 링크 또는 이미지 주소)</label>
                         <input type="text" value="${p.url}" oninput="updateProject(${p.id}, 'url', this.value); updatePreview(${p.id}, this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>커스텀 썸네일 URL (비워두면 자동 추출)</label>
+                        <input type="text" value="${p.thumbnail_url || ''}" oninput="updateProject(${p.id}, 'thumbnail_url', this.value); updatePreview(${p.id}, this.value)">
                         <div id="preview-${p.id}" class="preview-box">
-                            ${p.type === 'image' && p.url ? `<img src="${p.url}">` : p.type === 'video' ? '<span>YouTube 미리보기 미지원</span>' : '<span>미리보기 없음</span>'}
+                            ${(p.thumbnail_url || p.url) ? `<img src="${p.thumbnail_url || p.url}">` : '<span>미리보기 없음</span>'}
                         </div>
                     </div>
                     <div class="form-group">

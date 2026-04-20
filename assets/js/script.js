@@ -141,7 +141,7 @@ function renderGallery(category) {
     
     let projects = [];
     if (category === "ALL") {
-        projects = contentData.projects;
+        projects = [...contentData.projects];
     } else {
         projects = contentData.projects.filter(p => p.category === category);
     }
@@ -159,21 +159,23 @@ function renderGallery(category) {
         item.className = 'gallery-item';
         item.style.animationDelay = `${index * 0.05}s`;
         
-        let thumb = '<div class="thumb-placeholder">NO IMAGE</div>';
-        try {
+        let thumbUrl = p.thumbnail_url;
+        
+        if (!thumbUrl) {
             if (p.type === 'video') {
                 let vidId = "";
                 if (p.url.includes('v=')) vidId = p.url.split('v=')[1].split('&')[0];
                 else if (p.url.includes('youtu.be/')) vidId = p.url.split('/').pop().split('?')[0];
                 else vidId = p.url.split('/').pop().split('?')[0];
-                thumb = `<div class="thumb-placeholder"><img src="https://img.youtube.com/vi/${vidId}/mqdefault.jpg"></div>`;
-            } else if (p.type === 'image') {
-                thumb = `<div class="thumb-placeholder"><img src="${p.url}"></div>`;
+                // 고화질(hqdefault) 사용
+                thumbUrl = `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`;
+            } else {
+                thumbUrl = p.url;
             }
-        } catch (e) { /* ignore error in thumb parsing */ }
+        }
 
         item.innerHTML = `
-            ${thumb}
+            <div class="thumb-placeholder"><img src="${thumbUrl}" onerror="this.src='https://via.placeholder.com/320x180?text=IMAGE+ERROR'"></div>
             <div class="gallery-title">${p.title}</div>
         `;
         item.onclick = () => openProject(p.id);
