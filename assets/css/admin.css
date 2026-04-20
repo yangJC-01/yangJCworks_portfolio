@@ -1,0 +1,37 @@
+:root { 
+    --primary: #2c3e50; --success: #27ae60; --danger: #e74c3c; --warning: #f39c12;
+    --bg: #f8f9fa; --text: #2c3e50; --card: #ffffff; --border: #dee2e6;
+}
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 20px; background: var(--bg); color: var(--text); font-size: 14px; }
+.container { max-width: 1200px; margin: auto; background: var(--card); padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+h1 { margin: 0; font-size: 1.5rem; color: var(--primary); }
+
+.profile-bar { display: flex; gap: 15px; background: #eee; padding: 10px; border-radius: 4px; margin-bottom: 20px; align-items: center; }
+.profile-bar input { padding: 5px; border: 1px solid var(--border); border-radius: 3px; }
+
+/* Spreadsheet Table */
+.spreadsheet-container { overflow-x: auto; margin-bottom: 20px; }
+table { width: 100%; border-collapse: collapse; background: white; min-width: 800px; }
+th { background: #f1f3f5; color: #495057; font-weight: 600; text-align: left; padding: 10px; border: 1px solid var(--border); }
+td { padding: 5px; border: 1px solid var(--border); vertical-align: middle; }
+
+input[type="text"], input[type="number"], select, textarea { 
+    width: 100%; border: none; padding: 8px; box-sizing: border-box; background: transparent; font-size: 13px;
+}
+input:focus, select:focus, textarea:focus { background: #e9ecef; outline: none; }
+
+textarea { height: 40px; resize: vertical; }
+
+.btn { padding: 8px 15px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; transition: 0.2s; font-size: 12px; }
+.btn-add { background: var(--primary); color: white; }
+.btn-save { background: var(--success); color: white; padding: 10px 25px; font-size: 14px; }
+.btn-delete { background: var(--danger); color: white; padding: 4px 8px; }
+.btn-copy { background: #6c757d; color: white; padding: 4px 8px; }
+
+#toast { position: fixed; top: 20px; right: 20px; padding: 10px 20px; border-radius: 4px; color: white; z-index: 1000; display: none; }
+
+.instruction { font-size: 12px; color: #666; margin-bottom: 10px; }
+.thumbnail-cell { width: 60px; text-align: center; }
+.thumbnail-cell img { width: 50px; height: 30px; object-fit: cover; border-radius: 2px; }

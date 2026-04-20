@@ -2,89 +2,48 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Portfolio Admin Panel v2.0</title>
-    <style>
-        :root { 
-            --primary: #007bff; --success: #28a745; --danger: #dc3545; --warning: #ffc107;
-            --bg: #f4f7f6; --text: #333; --card: #ffffff;
-        }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; background: var(--bg); color: var(--text); line-height: 1.6; }
-        .container { max-width: 1000px; margin: auto; background: var(--card); padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; }
-        
-        h1 { font-size: 2rem; border-bottom: 3px solid var(--primary); display: inline-block; margin-bottom: 30px; }
-        h3 { margin-top: 0; color: var(--primary); }
-
-        .section { margin-bottom: 50px; padding: 20px; border-radius: 10px; background: #fff; border: 1px solid #eee; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 14px; color: #555; }
-        input, textarea, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; transition: 0.3s; }
-        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 8px rgba(0,123,255,0.2); }
-
-        .project-item { border-left: 5px solid var(--primary); padding: 25px; margin-bottom: 30px; border-radius: 0 10px 10px 0; background: #fdfdfd; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .project-item:hover { transform: translateY(-2px); transition: 0.3s; }
-
-        .flex-row { display: flex; gap: 20px; flex-wrap: wrap; }
-        .flex-row > div { flex: 1; min-width: 200px; }
-
-        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
-        button { padding: 12px 24px; cursor: pointer; border: none; border-radius: 8px; font-weight: bold; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-add { background: var(--primary); color: white; margin-bottom: 20px; }
-        .btn-save { background: var(--success); color: white; width: 100%; font-size: 1.2rem; margin-top: 20px; }
-        .btn-delete { background: var(--danger); color: white; font-size: 12px; padding: 8px 15px; }
-        .btn-copy { background: #6c757d; color: white; font-size: 12px; padding: 8px 15px; }
-        
-        /* 알림 토스트 */
-        #toast { position: fixed; bottom: 30px; right: 30px; padding: 15px 30px; border-radius: 10px; color: white; font-weight: bold; z-index: 1000; display: none; animation: slideIn 0.3s ease-out; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        
-        /* 프리뷰 박스 */
-        .preview-box { width: 100%; height: 150px; background: #eee; border-radius: 8px; margin-top: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px dashed #ccc; }
-        .preview-box img { max-height: 100%; object-fit: contain; }
-
-        .instruction-box { background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 8px; margin-bottom: 30px; font-size: 14px; }
-    </style>
+    <title>Portfolio Manager (Spreadsheet Mode)</title>
+    <link rel="stylesheet" href="assets/css/admin.css">
 </head>
 <body>
     <div id="toast"></div>
-
     <div class="container">
-        <h1>Portfolio Admin v2.0</h1>
+        <header>
+            <h1>📊 Portfolio Manager</h1>
+            <button class="btn btn-save" onclick="saveData()">💾 Save content.json</button>
+        </header>
+
+        <div class="instruction">
+            * Changes are saved locally. Click <b>Save</b> to download the final <code>content.json</code>.
+        </div>
+
+        <div class="profile-bar">
+            <strong>Profile:</strong>
+            <input type="text" id="admin-name" placeholder="Name" oninput="autoSave()">
+            <input type="text" id="admin-title" placeholder="Title" oninput="autoSave()">
+            <input type="text" id="admin-categories" placeholder="Categories (comma separated)" oninput="updateCategories(this.value)">
+        </div>
+
+        <div class="spreadsheet-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">Year</th>
+                        <th style="width: 200px;">Title</th>
+                        <th style="width: 120px;">Category</th>
+                        <th style="width: 100px;">Type</th>
+                        <th style="width: 60px;">Thumb</th>
+                        <th>URL / Media Source</th>
+                        <th style="width: 150px;">Thumbnail (Opt)</th>
+                        <th style="width: 40px;">-</th>
+                    </tr>
+                </thead>
+                <tbody id="project-body"></tbody>
+            </table>
+        </div>
         
-        <div class="instruction-box">
-            <strong>💡 사용법:</strong> 내용을 수정한 후 하단의 <b>'Save'</b> 버튼을 누르면 <code>content.json</code> 파일이 다운로드됩니다. <br>
-            그 파일을 프로젝트 폴더에 덮어쓰고 GitHub에 Push 하세요! (작업 내용은 브라우저에 자동 임시 저장됩니다.)
-        </div>
-
-        <!-- Profile Section -->
-        <div class="section">
-            <h3>📂 기본 프로필 및 설정</h3>
-            <div class="flex-row">
-                <div class="form-group">
-                    <label>내 이름</label>
-                    <input type="text" id="admin-name" oninput="autoSave()">
-                </div>
-                <div class="form-group">
-                    <label>직함 / 태그라인</label>
-                    <input type="text" id="admin-title" oninput="autoSave()">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>카테고리 목록 (쉼표로 구분)</label>
-                <input type="text" id="admin-categories" oninput="updateCategories(this.value)" placeholder="Animation, Illustration, Music...">
-            </div>
-        </div>
-
-        <!-- Projects Section -->
-        <div class="section">
-            <h3>🎨 프로젝트 리스트</h3>
-            <div id="project-list"></div>
-            <button class="btn-add" onclick="addProject()">✨ 새 프로젝트 추가</button>
-        </div>
-
-        <div class="section" style="border: none; background: transparent;">
-            <button class="btn-save" onclick="saveData()">💾 content.json 다운로드 (최종 저장)</button>
-            <button onclick="clearTempData()" style="background:none; color:gray; font-size:12px; margin-top:10px; text-decoration: underline; width: 100%;">임시 저장 데이터 초기화</button>
-        </div>
+        <button class="btn btn-add" onclick="addProject()">+ Add New Project</button>
+        <button onclick="clearTempData()" style="float:right; background:none; border:none; color:#999; cursor:pointer; text-decoration:underline;">Reset Draft</button>
     </div>
 
     <script>
@@ -92,154 +51,115 @@
         const LOCAL_STORAGE_KEY = 'portfolio_draft_data';
 
         async function init() {
-            // 1. 임시 저장 데이터 확인
             const savedDraft = localStorage.getItem(LOCAL_STORAGE_KEY);
             if (savedDraft) {
                 data = JSON.parse(savedDraft);
-                showToast("임시 저장된 데이터를 불러왔습니다.", "info");
             } else {
                 try {
                     const res = await fetch('content.json');
                     data = await res.json();
                 } catch (e) {
-                    showToast("기본 데이터를 불러오지 못했습니다. 새로 시작합니다.", "error");
-                    data = { profile: { name: "", title: "" }, settings: { categories: [] }, projects: [] };
+                    data = { profile: { name: "", title: "" }, settings: { categories: ["General"] }, projects: [] };
                 }
             }
-            
-            fillStaticFields();
+            fillFields();
             renderProjects();
         }
 
-        function fillStaticFields() {
+        function fillFields() {
             document.getElementById('admin-name').value = data.profile.name;
             document.getElementById('admin-title').value = data.profile.title;
             document.getElementById('admin-categories').value = data.settings.categories.join(', ');
         }
 
-        function renderProjects() {
-            const list = document.getElementById('project-list');
-            list.innerHTML = '';
-            
-            // 연도순 정렬 (내림차순)
-            const sortedProjects = [...data.projects].sort((a, b) => b.year - a.year);
+        function getDirectImgurUrl(url) {
+            if (!url) return url;
+            if (url.includes('imgur.com') && !url.includes('i.imgur.com')) {
+                if (!url.includes('/a/') && !url.includes('/gallery/')) {
+                    const id = url.split('/').pop();
+                    return `https://i.imgur.com/${id}.jpg`;
+                }
+            }
+            return url;
+        }
 
-            sortedProjects.forEach((p) => {
-                const item = document.createElement('div');
-                item.className = 'project-item';
+        function getThumbnail(p) {
+            if (p.thumbnail_url) return getDirectImgurUrl(p.thumbnail_url);
+            if (p.type === 'image') return getDirectImgurUrl(p.url);
+            if (p.type === 'video') {
+                let vidId = "";
+                if (p.url.includes('v=')) vidId = p.url.split('v=')[1].split('&')[0];
+                else if (p.url.includes('youtu.be/')) vidId = p.url.split('/').pop().split('?')[0];
+                else vidId = p.url.split('/').pop().split('?')[0];
+                return `https://img.youtube.com/vi/${vidId}/mqdefault.jpg`;
+            }
+            return 'https://via.placeholder.com/50x30?text=WEB';
+        }
+
+        function renderProjects() {
+            const body = document.getElementById('project-body');
+            body.innerHTML = '';
+            
+            data.projects.sort((a, b) => b.year - a.year).forEach((p) => {
+                const tr = document.createElement('tr');
                 
                 const catOptions = data.settings.categories.map(cat => 
                     `<option value="${cat}" ${p.category === cat ? 'selected' : ''}>${cat}</option>`
                 ).join('');
 
-                item.innerHTML = `
-                    <div class="flex-row">
-                        <div class="form-group">
-                            <label>프로젝트 제목</label>
-                            <input type="text" value="${p.title}" oninput="updateProject(${p.id}, 'title', this.value)">
-                        </div>
-                        <div class="form-group" style="flex: 0.3;">
-                            <label>작업 연도</label>
-                            <input type="number" value="${p.year}" oninput="updateProject(${p.id}, 'year', parseInt(this.value))">
-                        </div>
-                    </div>
-                    <div class="flex-row">
-                        <div class="form-group">
-                            <label>카테고리</label>
-                            <select onchange="updateProject(${p.id}, 'category', this.value)">
-                                ${catOptions}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>미디어 타입</label>
-                            <select onchange="updateProject(${p.id}, 'type', this.value); renderProjects();">
-                                <option value="video" ${p.type==='video'?'selected':''}>YouTube 영상</option>
-                                <option value="image" ${p.type==='image'?'selected':''}>이미지 URL</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>URL (YouTube 공유 링크 또는 이미지 주소)</label>
-                        <input type="text" value="${p.url}" oninput="updateProject(${p.id}, 'url', this.value); updatePreview(${p.id}, this.value)">
-                    </div>
-                    <div class="form-group">
-                        <label>커스텀 썸네일 URL (비워두면 자동 추출)</label>
-                        <input type="text" value="${p.thumbnail_url || ''}" oninput="updateProject(${p.id}, 'thumbnail_url', this.value); updatePreview(${p.id}, this.value)">
-                        <div id="preview-${p.id}" class="preview-box">
-                            ${(p.thumbnail_url || p.url) ? `<img src="${p.thumbnail_url || p.url}">` : '<span>미리보기 없음</span>'}
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>상세 설명</label>
-                        <textarea rows="3" oninput="updateProject(${p.id}, 'description', this.value)">${p.description}</textarea>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn-copy" onclick="copyProject(${p.id})">👯 복제하기</button>
-                        <button class="btn-delete" onclick="deleteProject(${p.id})">🗑️ 삭제</button>
-                    </div>
+                const thumb = getThumbnail(p);
+
+                tr.innerHTML = `
+                    <td><input type="number" value="${p.year}" oninput="updateProject(${p.id}, 'year', parseInt(this.value))"></td>
+                    <td><input type="text" value="${p.title}" oninput="updateProject(${p.id}, 'title', this.value)"></td>
+                    <td><select onchange="updateProject(${p.id}, 'category', this.value)">${catOptions}</select></td>
+                    <td>
+                        <select onchange="updateProject(${p.id}, 'type', this.value); renderProjects();">
+                            <option value="video" ${p.type==='video'?'selected':''}>Video</option>
+                            <option value="image" ${p.type==='image'?'selected':''}>Image</option>
+                            <option value="website" ${p.type==='website'?'selected':''}>Website</option>
+                        </select>
+                    </td>
+                    <td class="thumbnail-cell"><img src="${thumb}" onerror="this.src='https://via.placeholder.com/50x30?text=ERR'"></td>
+                    <td><input type="text" value="${p.url}" placeholder="URL" oninput="updateProject(${p.id}, 'url', this.value)"></td>
+                    <td><input type="text" value="${p.thumbnail_url || ''}" placeholder="Thumbnail URL" oninput="updateProject(${p.id}, 'thumbnail_url', this.value)"></td>
+                    <td><button class="btn-delete" onclick="deleteProject(${p.id})">×</button></td>
                 `;
-                list.appendChild(item);
+                body.appendChild(tr);
             });
         }
 
         function updateProject(id, field, value) {
             const p = data.projects.find(proj => proj.id === id);
-            if (p) {
-                p[field] = value;
-                autoSave();
-            }
-        }
-
-        function updatePreview(id, url) {
-            const p = data.projects.find(proj => proj.id === id);
-            const box = document.getElementById(`preview-${id}`);
-            if (p.type === 'image' && url) {
-                box.innerHTML = `<img src="${url}" onerror="this.parentNode.innerHTML='<span>잘못된 이미지 주소</span>'">`;
-            } else if (p.type === 'video') {
-                box.innerHTML = '<span>YouTube 미리보기 미지원</span>';
-            }
+            if (p) { p[field] = value; autoSave(); }
         }
 
         function addProject() {
-            const newId = Date.now(); // 고유 ID 생성
             data.projects.push({
-                id: newId,
-                title: "새 프로젝트",
+                id: Date.now(),
+                title: "New Project",
                 type: "video",
                 url: "",
                 year: new Date().getFullYear(),
-                category: data.settings.categories[0] || "General",
+                category: data.settings.categories[0],
                 description: ""
             });
             renderProjects();
             autoSave();
-            showToast("새 프로젝트가 추가되었습니다.", "success");
-        }
-
-        function copyProject(id) {
-            const p = data.projects.find(proj => proj.id === id);
-            const copy = JSON.parse(JSON.stringify(p));
-            copy.id = Date.now();
-            copy.title += " (복사본)";
-            data.projects.push(copy);
-            renderProjects();
-            autoSave();
-            showToast("프로젝트를 복제했습니다.", "info");
         }
 
         function deleteProject(id) {
-            if(confirm("정말 이 프로젝트를 삭제하시겠습니까?")) {
+            if(confirm("Delete this project?")) {
                 data.projects = data.projects.filter(p => p.id !== id);
                 renderProjects();
                 autoSave();
-                showToast("삭제되었습니다.", "warning");
             }
         }
 
         function updateCategories(val) {
             data.settings.categories = val.split(',').map(s => s.trim()).filter(s => s !== "");
             autoSave();
-            renderProjects(); // 드롭다운 갱신을 위해 다시 렌더링
+            renderProjects();
         }
 
         function autoSave() {
@@ -249,18 +169,10 @@
         }
 
         function clearTempData() {
-            if(confirm("임시 저장된 작업 내용을 모두 지우고 파일에서 다시 불러올까요?")) {
+            if(confirm("Discard all drafts and reload from file?")) {
                 localStorage.removeItem(LOCAL_STORAGE_KEY);
                 location.reload();
             }
-        }
-
-        function showToast(msg, type) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.style.display = 'block';
-            t.style.background = type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : type === 'warning' ? 'var(--warning)' : 'var(--primary)';
-            setTimeout(() => { t.style.display = 'none'; }, 3000);
         }
 
         function saveData() {
@@ -270,9 +182,7 @@
             a.href = url;
             a.download = 'content.json';
             a.click();
-            
-            alert("✅ content.json 파일이 다운로드되었습니다!\n\n1. 다운로드된 파일을 프로젝트 폴더에 덮어쓰세요.\n2. 변경사항을 GitHub에 Push 하세요.");
-            showToast("다운로드 완료!", "success");
+            alert("✅ content.json downloaded. Overwrite the file in your folder and push to GitHub.");
         }
 
         init();

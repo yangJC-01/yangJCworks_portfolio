@@ -1,11 +1,11 @@
 @font-face {
     font-family: 'Galmuri14';
-    src: url('../../font/Galmuri14.ttf') format('truetype');
+    src: url('../fonts/Galmuri14.ttf') format('truetype');
 }
 
 @font-face {
     font-family: 'zpix';
-    src: url('../../font/zpix.ttf') format('truetype');
+    src: url('../fonts/zpix.ttf') format('truetype');
 }
 
 :root {
@@ -197,6 +197,11 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.gallery-item:hover .thumb-placeholder img {
+    transform: scale(1.1);
 }
 
 .gallery-title {

@@ -12,15 +12,6 @@
   },
   "projects": [
     {
-      "id": 1776668211068,
-      "title": "내일의 밤하늘의 초계반 - 모카 (커버)",
-      "type": "video",
-      "url": "https://www.youtube.com/watch?v=sWmX6IWJHNE",
-      "year": 2025,
-      "category": "General",
-      "description": "모카님의 1주년 기념 커버곡 뮤직비디오 제작했습니다 "
-    },
-    {
       "id": 1776689975950,
       "title": "STEEL HEART(short animation)",
       "type": "video",
@@ -30,6 +21,34 @@
       "description": "풀 3D 애니메이션입니다. 기획개발공모전 우수작 선정 "
     },
     {
+      "id": 1776691722536,
+      "title": "Wiggly animation",
+      "type": "website",
+      "url": "https://wiggly-animator.pages.dev/",
+      "year": 2026,
+      "category": "Developement",
+      "description": "",
+      "thumbnail_url": "https://i.imgur.com/nh3tXr6.png"
+    },
+    {
+      "id": 1776668211068,
+      "title": "내일의 밤하늘의 초계반 - 모카 (커버)",
+      "type": "video",
+      "url": "https://www.youtube.com/watch?v=sWmX6IWJHNE",
+      "year": 2025,
+      "category": "General",
+      "description": "모카님의 1주년 기념 커버곡 뮤직비디오 제작했습니다 "
+    },
+    {
+      "id": 1776690728907,
+      "title": "NETFLIX이별에 필요한",
+      "type": "video",
+      "url": "https://www.youtube.com/watch?v=l7Eh14Nmp7U",
+      "year": 2025,
+      "category": "Animation",
+      "description": "협력 스튜디오로, 일부 씬에서 3D BG 제작, 선화, 프로젝션 매핑, 애니메이션 타이다운, 3D 애니메이팅 참여 "
+    },
+    {
       "id": 1776690017967,
       "title": "Burned Out 2022(short animation)",
       "type": "video",
@@ -37,6 +56,15 @@
       "year": 2022,
       "category": "Animation",
       "description": "2022년 제작한 한예종 학생 상영회에서 상영한 1학년작입니다 "
+    },
+    {
+      "id": 1776690667676,
+      "title": "Tropic Island - machineMV",
+      "type": "video",
+      "url": "https://www.youtube.com/watch?v=CEulLL0mKlw",
+      "year": 2018,
+      "category": "Animation",
+      "description": "2D 애니메이션, 영국의 밴드 Tropic Island 와 콜라보 작업 "
     }
   ]
 }

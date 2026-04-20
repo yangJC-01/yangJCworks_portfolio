@@ -71,7 +71,8 @@ async function typeEffect(element, text, speed) {
 
 async function loadContent() {
     try {
-        const response = await fetch('content.json');
+        // 캐시 방지를 위해 시간값을 쿼리 스트링으로 추가 (?t=12345)
+        const response = await fetch('content.json?t=' + new Date().getTime());
         if (!response.ok) throw new Error("File not found");
         contentData = await response.json();
         
@@ -136,6 +137,19 @@ function selectCategory(index) {
     renderGallery(categories[index]);
 }
 
+function getDirectImgurUrl(url) {
+    if (!url) return url;
+    if (url.includes('imgur.com') && !url.includes('i.imgur.com')) {
+        // imgur.com/XXXXX -> i.imgur.com/XXXXX.jpg (단일 이미지 페이지 대응)
+        // 단, /a/ 나 /gallery/ 는 API 없이 첫 이미지를 알 수 없으므로 그대로 둡니다.
+        if (!url.includes('/a/') && !url.includes('/gallery/')) {
+            const id = url.split('/').pop();
+            return `https://i.imgur.com/${id}.jpg`;
+        }
+    }
+    return url;
+}
+
 function renderGallery(category) {
     projectGallery.innerHTML = '';
     
@@ -159,7 +173,7 @@ function renderGallery(category) {
         item.className = 'gallery-item';
         item.style.animationDelay = `${index * 0.05}s`;
         
-        let thumbUrl = p.thumbnail_url;
+        let thumbUrl = getDirectImgurUrl(p.thumbnail_url);
         
         if (!thumbUrl) {
             if (p.type === 'video') {
@@ -167,15 +181,18 @@ function renderGallery(category) {
                 if (p.url.includes('v=')) vidId = p.url.split('v=')[1].split('&')[0];
                 else if (p.url.includes('youtu.be/')) vidId = p.url.split('/').pop().split('?')[0];
                 else vidId = p.url.split('/').pop().split('?')[0];
-                // 고화질(hqdefault) 사용
-                thumbUrl = `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`;
+                thumbUrl = `https://img.youtube.com/vi/${vidId}/mqdefault.jpg`;
+            } else if (p.type === 'image') {
+                thumbUrl = getDirectImgurUrl(p.url);
             } else {
-                thumbUrl = p.url;
+                thumbUrl = 'https://via.placeholder.com/320x180?text=WEBSITE';
             }
         }
 
         item.innerHTML = `
-            <div class="thumb-placeholder"><img src="${thumbUrl}" onerror="this.src='https://via.placeholder.com/320x180?text=IMAGE+ERROR'"></div>
+            <div class="thumb-placeholder">
+                <img src="${thumbUrl}" onerror="this.src='https://via.placeholder.com/320x180?text=IMAGE+ERROR'">
+            </div>
             <div class="gallery-title">${p.title}</div>
         `;
         item.onclick = () => openProject(p.id);
@@ -210,6 +227,13 @@ function openProject(id) {
         modalBody.innerHTML += `<iframe width="100%" height="450" src="${videoUrl}" frameborder="0" allowfullscreen></iframe>`;
     } else if (project.type === 'image') {
         modalBody.innerHTML += `<img src="${project.url}" alt="${project.title}">`;
+    } else if (project.type === 'website') {
+        modalBody.innerHTML += `
+            <div style="text-align: center; padding: 40px; border: 1px dashed var(--text-color); margin-top: 20px;">
+                <p>This is a live website project.</p>
+                <a href="${project.url}" target="_blank" style="color: var(--text-color); text-decoration: underline; font-size: 1.2rem;">[ VISIT WEBSITE ]</a>
+            </div>
+        `;
     }
 
     modal.classList.remove('hidden');
