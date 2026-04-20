@@ -11,6 +11,7 @@ const projectGallery = document.getElementById('project-gallery');
 
 let contentData = null;
 let currentCategoryIndex = 0;
+let categories = [];
 
 // 부팅 애니메이션 시퀀스
 const bootLines = [
@@ -88,7 +89,7 @@ async function loadContent() {
 
         printLine("-------------------------------------------------------------------------------------------");
         printLine(contentData.profile.welcome_message || `Welcome, ${contentData.profile.name}!`);
-        printLine("Type 'help' for commands or use ARROWS to navigate categories.");
+        printLine("Use ARROWS to explore categories or type 'help'.");
         printLine("");
 
         initDashboard();
@@ -99,9 +100,9 @@ async function loadContent() {
 }
 
 function initDashboard() {
-    const categories = contentData.settings.categories;
-    if (!categories || categories.length === 0) return;
-
+    // "ALL" 카테고리를 맨 앞에 추가
+    categories = ["ALL", ...(contentData.settings.categories || [])];
+    
     categoryNav.innerHTML = '';
     categories.forEach((cat, index) => {
         const item = document.createElement('div');
@@ -111,7 +112,7 @@ function initDashboard() {
         categoryNav.appendChild(item);
     });
 
-    selectCategory(0);
+    selectCategory(0); // 기본으로 ALL 선택
     
     window.addEventListener('keydown', (e) => {
         if (document.activeElement === input) return;
@@ -126,7 +127,6 @@ function initDashboard() {
 
 function selectCategory(index) {
     currentCategoryIndex = index;
-    const categories = contentData.settings.categories;
     const items = document.querySelectorAll('.category-item');
     
     items.forEach((item, i) => {
@@ -138,23 +138,39 @@ function selectCategory(index) {
 
 function renderGallery(category) {
     projectGallery.innerHTML = '';
-    const projects = contentData.projects
-        .filter(p => p.category === category)
-        .sort((a, b) => b.year - a.year);
+    
+    let projects = [];
+    if (category === "ALL") {
+        projects = contentData.projects;
+    } else {
+        projects = contentData.projects.filter(p => p.category === category);
+    }
 
-    projects.forEach(p => {
+    // 연도순 정렬
+    projects.sort((a, b) => b.year - a.year);
+
+    if (projects.length === 0) {
+        projectGallery.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 20px; opacity: 0.5;">NO PROJECTS FOUND IN THIS CATEGORY.</div>';
+        return;
+    }
+
+    projects.forEach((p, index) => {
         const item = document.createElement('div');
         item.className = 'gallery-item';
+        item.style.animationDelay = `${index * 0.05}s`;
         
         let thumb = '<div class="thumb-placeholder">NO IMAGE</div>';
-        if (p.type === 'video') {
-            let vidId = "";
-            if (p.url.includes('v=')) vidId = p.url.split('v=')[1].split('&')[0];
-            else vidId = p.url.split('/').pop().split('?')[0];
-            thumb = `<div class="thumb-placeholder"><img src="https://img.youtube.com/vi/${vidId}/mqdefault.jpg"></div>`;
-        } else if (p.type === 'image') {
-            thumb = `<div class="thumb-placeholder"><img src="${p.url}"></div>`;
-        }
+        try {
+            if (p.type === 'video') {
+                let vidId = "";
+                if (p.url.includes('v=')) vidId = p.url.split('v=')[1].split('&')[0];
+                else if (p.url.includes('youtu.be/')) vidId = p.url.split('/').pop().split('?')[0];
+                else vidId = p.url.split('/').pop().split('?')[0];
+                thumb = `<div class="thumb-placeholder"><img src="https://img.youtube.com/vi/${vidId}/mqdefault.jpg"></div>`;
+            } else if (p.type === 'image') {
+                thumb = `<div class="thumb-placeholder"><img src="${p.url}"></div>`;
+            }
+        } catch (e) { /* ignore error in thumb parsing */ }
 
         item.innerHTML = `
             ${thumb}
@@ -209,7 +225,7 @@ const commands = {
     'help': () => {
         printLine("Available commands:");
         printLine("  help                - Show this help message");
-        printLine("  ls [category]       - List projects (optionally filtered)");
+        printLine("  ls [category]       - List projects in terminal");
         printLine("  open [id]           - View project by ID");
         printLine("  whoami              - Profile information");
         printLine("  font                - Toggle font style");
@@ -221,23 +237,12 @@ const commands = {
         printLine(`TITLE: ${contentData.profile.title}`);
     },
     'ls': (args) => {
-        let projects = [...contentData.projects].sort((a, b) => b.year - a.year);
+        let projs = [...contentData.projects].sort((a, b) => b.year - a.year);
         const filter = args[0] ? args[0].toLowerCase() : null;
-
-        if (filter) {
-            projects = projects.filter(p => p.category.toLowerCase() === filter);
-            printLine(`Listing projects for category: ${filter}`);
-        } else {
-            printLine("Listing all projects (Sorted by year):");
-        }
-
-        if (projects.length === 0) {
-            printLine("  No projects found.");
-        } else {
-            projects.forEach(p => {
-                printLine(` [${p.id}] [${p.year}] [${p.category}] ${p.title}`);
-            });
-        }
+        if (filter) projs = projs.filter(p => p.category.toLowerCase() === filter);
+        
+        printLine(filter ? `Projects for ${filter}:` : "All Projects:");
+        projs.forEach(p => printLine(` [${p.id}] [${p.year}] [${p.category}] ${p.title}`));
     },
     'open': (args) => {
         if (!args[0]) {
@@ -267,7 +272,7 @@ const commands = {
     },
     'clear': () => {
         output.innerHTML = '';
-        dashboard.style.display = 'none'; // 클리어 시 대시보드도 숨김 (다시 ls 치거나 하면 나옴)
+        dashboard.style.display = 'none';
     }
 };
 
@@ -281,10 +286,9 @@ input.addEventListener('keydown', (e) => {
         
         if (commands[cmd]) {
             commands[cmd](args);
-            if (cmd === 'clear') { /* dashboard hidden */ }
-            else dashboard.style.display = 'block'; // 다른 명령 시 다시 표시
+            if (cmd !== 'clear') dashboard.style.display = 'block';
         } else if (cmd !== "") {
-            printLine(`'${cmd}' is not recognized as an internal or external command.`);
+            printLine(`'${cmd}' is not recognized.`);
         }
         
         input.value = '';
