@@ -95,8 +95,10 @@ body {
 
 .line.banner {
     white-space: pre;
-    line-height: 1.1;
-    font-size: 0.9rem;
+    line-height: 1;
+    font-size: 0.75rem;
+    letter-spacing: -1px;
+    font-family: monospace; /* 정렬을 위해 표준 모노스페이스 강제 */
 }
 
 #input-line {
