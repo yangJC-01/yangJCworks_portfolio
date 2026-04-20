@@ -93,6 +93,12 @@ body {
     text-shadow: var(--glow);
 }
 
+.line.banner {
+    white-space: pre;
+    line-height: 1.1;
+    font-size: 0.9rem;
+}
+
 #input-line {
     display: flex;
     margin-top: 10px;
