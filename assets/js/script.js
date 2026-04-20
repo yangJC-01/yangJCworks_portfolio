@@ -5,8 +5,12 @@ const modalBody = document.getElementById('modal-body');
 const modalClose = document.getElementById('modal-close');
 const bootScreen = document.getElementById('boot-screen');
 const terminal = document.getElementById('terminal');
+const dashboard = document.getElementById('dashboard');
+const categoryNav = document.getElementById('category-nav');
+const projectGallery = document.getElementById('project-gallery');
 
 let contentData = null;
+let currentCategoryIndex = 0;
 
 // 부팅 애니메이션 시퀀스
 const bootLines = [
@@ -30,11 +34,11 @@ async function runBootSequence() {
     window.addEventListener('keydown', skipBoot);
 
     for (let line of bootLines) {
-        if (!isBooting) break; // 스킵 시 중단
+        if (!isBooting) break;
         const div = document.createElement('div');
         bootScreen.appendChild(div);
-        await typeEffect(div, line, 5); // 속도 20 -> 5로 대폭 상향
-        await new Promise(r => setTimeout(r, 30)); // 지연시간 단축
+        await typeEffect(div, line, 5);
+        await new Promise(r => setTimeout(r, 30));
         bootScreen.scrollTop = bootScreen.scrollHeight;
     }
     
@@ -53,7 +57,7 @@ function completeBoot() {
     bootScreen.classList.add('hidden');
     terminal.classList.remove('hidden');
     input.focus();
-    if (!contentData) loadContent(); // 아직 로드 안 됐다면 로드
+    if (!contentData) loadContent();
 }
 
 async function typeEffect(element, text, speed) {
@@ -70,7 +74,6 @@ async function loadContent() {
         if (!response.ok) throw new Error("File not found");
         contentData = await response.json();
         
-        // 블록 스타일 아스키 아트 배너 (복구)
         const banner = `
 ██╗   ██╗ █████╗ ███╗   ██╗ ██████╗      ██╗ ██████╗    ██╗    ██╗ ██████╗ ██████╗ ██╗  ██╗███████╗
 ╚██╗ ██╔╝██╔══██╗████╗  ██║██╔════╝      ██║██╔════╝    ██║    ██║██╔═══██╗██╔══██╗██║ ██╔╝██╔════╝
@@ -85,12 +88,81 @@ async function loadContent() {
 
         printLine("-------------------------------------------------------------------------------------------");
         printLine(contentData.profile.welcome_message || `Welcome, ${contentData.profile.name}!`);
-        printLine("Type 'help' to see available commands.");
+        printLine("Type 'help' for commands or use ARROWS to navigate categories.");
         printLine("");
+
+        initDashboard();
+        
     } catch (e) {
         printLine("! ERROR: Failed to load content.json.");
-        printLine("! If you are opening this file directly in a browser, use a local server (like Live Server).");
     }
+}
+
+function initDashboard() {
+    const categories = contentData.settings.categories;
+    if (!categories || categories.length === 0) return;
+
+    categoryNav.innerHTML = '';
+    categories.forEach((cat, index) => {
+        const item = document.createElement('div');
+        item.className = 'category-item';
+        item.textContent = cat;
+        item.onclick = () => selectCategory(index);
+        categoryNav.appendChild(item);
+    });
+
+    selectCategory(0);
+    
+    window.addEventListener('keydown', (e) => {
+        if (document.activeElement === input) return;
+        
+        if (e.key === 'ArrowLeft') {
+            selectCategory((currentCategoryIndex - 1 + categories.length) % categories.length);
+        } else if (e.key === 'ArrowRight') {
+            selectCategory((currentCategoryIndex + 1) % categories.length);
+        }
+    });
+}
+
+function selectCategory(index) {
+    currentCategoryIndex = index;
+    const categories = contentData.settings.categories;
+    const items = document.querySelectorAll('.category-item');
+    
+    items.forEach((item, i) => {
+        item.classList.toggle('active', i === index);
+    });
+
+    renderGallery(categories[index]);
+}
+
+function renderGallery(category) {
+    projectGallery.innerHTML = '';
+    const projects = contentData.projects
+        .filter(p => p.category === category)
+        .sort((a, b) => b.year - a.year);
+
+    projects.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'gallery-item';
+        
+        let thumb = '<div class="thumb-placeholder">NO IMAGE</div>';
+        if (p.type === 'video') {
+            let vidId = "";
+            if (p.url.includes('v=')) vidId = p.url.split('v=')[1].split('&')[0];
+            else vidId = p.url.split('/').pop().split('?')[0];
+            thumb = `<div class="thumb-placeholder"><img src="https://img.youtube.com/vi/${vidId}/mqdefault.jpg"></div>`;
+        } else if (p.type === 'image') {
+            thumb = `<div class="thumb-placeholder"><img src="${p.url}"></div>`;
+        }
+
+        item.innerHTML = `
+            ${thumb}
+            <div class="gallery-title">${p.title}</div>
+        `;
+        item.onclick = () => openProject(p.id);
+        projectGallery.appendChild(item);
+    });
 }
 
 function printLine(text, type = 'default') {
@@ -112,7 +184,6 @@ function openProject(id) {
     
     if (project.type === 'video') {
         let videoUrl = project.url;
-        // 일반 유튜브 링크를 임베드 링크로 변환
         if (videoUrl.includes('youtube.com/watch?v=')) {
             videoUrl = videoUrl.replace('watch?v=', 'embed/').split('&')[0];
         } else if (videoUrl.includes('youtu.be/')) {
@@ -196,6 +267,7 @@ const commands = {
     },
     'clear': () => {
         output.innerHTML = '';
+        dashboard.style.display = 'none'; // 클리어 시 대시보드도 숨김 (다시 ls 치거나 하면 나옴)
     }
 };
 
@@ -209,6 +281,8 @@ input.addEventListener('keydown', (e) => {
         
         if (commands[cmd]) {
             commands[cmd](args);
+            if (cmd === 'clear') { /* dashboard hidden */ }
+            else dashboard.style.display = 'block'; // 다른 명령 시 다시 표시
         } else if (cmd !== "") {
             printLine(`'${cmd}' is not recognized as an internal or external command.`);
         }

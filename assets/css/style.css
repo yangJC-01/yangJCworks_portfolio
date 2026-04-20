@@ -122,6 +122,80 @@ body {
     text-shadow: var(--glow);
 }
 
+#dashboard {
+    margin: 20px 0;
+    border-top: 1px double var(--text-color);
+    padding-top: 20px;
+}
+
+#category-nav {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.category-item {
+    padding: 5px 15px;
+    border: 1px solid var(--text-color);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+.category-item:hover, .category-item.active {
+    background-color: var(--text-color);
+    color: var(--bg-color);
+    box-shadow: var(--glow);
+}
+
+#project-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.gallery-item {
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    padding: 10px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.gallery-item:hover {
+    border-color: var(--text-color);
+    transform: scale(1.03);
+    box-shadow: var(--glow);
+}
+
+.thumb-placeholder {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: rgba(0, 255, 65, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    font-size: 0.8rem;
+    overflow: hidden;
+}
+
+.thumb-placeholder img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.gallery-title {
+    font-size: 0.85rem;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /* 스캔라인 효과 */
 .scanlines {
     position: fixed;
